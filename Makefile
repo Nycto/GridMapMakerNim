@@ -8,7 +8,7 @@ SHELL = /bin/bash -o pipefail
 
 
 # A list of all test names
-TESTS ?= $(notdir $(basename $(wildcard test/*_test.nim)))
+TESTS ?= $(patsubst test/%,%,$(basename $(shell find test -name "*.nim")))
 
 
 # Compile everything
@@ -20,12 +20,14 @@ all: test $(addprefix build/,$(notdir $(basename $(wildcard bin/*.nim))))
 .PHONY: test
 test: $(TESTS)
 
+ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+
 
 # Compiles a nim file
 define COMPILE
 nimble c $(FLAGS) \
 		--path:. --nimcache:./build/nimcache \
-		--out:../build/$(notdir $(basename $1)) \
+		--out:$(ROOT)build/$(subst /,_,$(patsubst test/%,%,$(basename $1))) \
 		$1 \
 	| grep -v \
 		-e "^Hint: " \
@@ -37,14 +39,13 @@ endef
 # A template for defining targets for a test
 define DEFINE_TEST
 
-build/$1: test/$1.nim test/helpers.nim \
-		$(shell find -name $(patsubst %_test,%,$1).nim)
+build/$(subst /,_,$1): test/$1.nim $(shell find -name $(notdir $(patsubst %_test,%,$1)).nim)
 
 	$(call COMPILE,test/$1.nim)
-	build/$1
+	build/$(subst /,_,$1)
 
 .PHONY: $1
-$1: build/$1
+$1: build/$(subst /,_,$1)
 
 endef
 

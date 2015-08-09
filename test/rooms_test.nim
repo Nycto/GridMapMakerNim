@@ -1,4 +1,4 @@
-import unittest, private/dungeon/rooms
+import unittest, src/rooms
 
 proc `==`(
     placed: PlacedRoom,

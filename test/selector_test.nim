@@ -1,4 +1,4 @@
-import unittest, optional_t, private/dungeon/selector
+import unittest, optional_t, src/selector
 
 suite "The selector should":
 
